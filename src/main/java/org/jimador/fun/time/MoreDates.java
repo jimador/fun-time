@@ -11,10 +11,10 @@ import java.io.Serializable;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 /**
  * Utility class for Dates
@@ -116,7 +116,7 @@ public class MoreDates {
         private final LocalDate startDate;
         private final LocalDate endDate;
 
-        public WeekDayRange(LocalDate startDate, LocalDate endDate) {
+        WeekDayRange(LocalDate startDate, LocalDate endDate) {
             Objects.requireNonNull(startDate, "Start date must not be null!");
             Objects.requireNonNull(endDate, "End date must not be null");
             this.startDate = startDate;
@@ -125,11 +125,16 @@ public class MoreDates {
 
         @Override
         protected Set<LocalDate> delegate() {
-            return Stream.iterate(startDate, d -> d.plusDays(1))
-                         .limit(ChronoUnit.DAYS.between(startDate, endDate) + 1)
-                         .filter(this::notWeekend)
-                         .collect(ImmutableSet.toImmutableSet())
-                    ;
+            HashSet<LocalDate> localDates = new HashSet<>();
+            long limit = ChronoUnit.DAYS.between(startDate, endDate) + 1;
+            for (LocalDate d = startDate; ; d = d.plusDays(1)) {
+                if (limit-- == 0)
+                    break;
+                if (notWeekend(d)) {
+                    localDates.add(d);
+                }
+            }
+            return localDates;
         }
 
         private boolean notWeekend(LocalDate localDate) {
