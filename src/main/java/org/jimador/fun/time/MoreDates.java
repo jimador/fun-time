@@ -11,19 +11,16 @@ import java.io.Serializable;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * Utility class for Dates
  *
  * @author James Dunnam
- * @implNote
- * US Federal holidays are cached for convenience, as the dates are calculated. The cached dates are expired after 10 minutes or 1000 entries in an LRU fashion.
+ * @implNote US Federal holidays are cached for convenience, as the dates are calculated. The cached dates are expired after 10 minutes or 1000 entries in an LRU fashion.
  */
 public class MoreDates {
 
@@ -72,9 +69,7 @@ public class MoreDates {
     private static Set<LocalDate> getUSFederalHolidayForYearRange(int start, int end) {
         ImmutableSet.Builder<LocalDate> holidayDates = ImmutableSet.builder();
         for (int i = start; i <= end; i++) {
-            for (USFederalHoliday usFederalHoliday : USFederalHoliday.US_FEDERAL_HOLIDAYS) {
-                holidayDates.add(holidayCache.getUnchecked(HolidayKey.of(usFederalHoliday, i)));
-            }
+            holidayDates.addAll(getUSFederalHolidayDatesForYear(i));
         }
 
         return holidayDates.build();
@@ -88,10 +83,13 @@ public class MoreDates {
      * @return a {@link Set} of {@link LocalDate}
      */
     private static Set<LocalDate> getUSFederalHolidayDatesForYear(int year) {
-        return Arrays.stream(USFederalHoliday.US_FEDERAL_HOLIDAYS)
-                     .map(day -> HolidayKey.of(day, year))
-                     .map(holidayCache::getUnchecked)
-                     .collect(Collectors.toSet());
+        ImmutableSet.Builder<LocalDate> holidayDates = ImmutableSet.builder();
+        for (USFederalHoliday day : USFederalHoliday.US_FEDERAL_HOLIDAYS) {
+            HolidayKey of = HolidayKey.of(day, year);
+            LocalDate unchecked = holidayCache.getUnchecked(of);
+            holidayDates.add(unchecked);
+        }
+        return holidayDates.build();
     }
 
     /**
