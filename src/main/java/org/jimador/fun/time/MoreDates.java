@@ -3,15 +3,12 @@ package org.jimador.fun.time;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ForwardingSet;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 
 import java.io.Serializable;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.HashSet;
+import java.util.Calendar;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -52,10 +49,16 @@ public class MoreDates {
      * @implNote Business days exclude weekends and the observance of US Federal holidays.
      */
     public static int totalBusinessDaysBetween(LocalDate start, LocalDate end) {
-        final Set<LocalDate> weekDaysForYearRange = new WeekDayRange(start, end);
+        Objects.requireNonNull(start, "Start date must not be null");
+        Objects.requireNonNull(end, "End date must not be null");
+        long daysBetweenWithoutWeekends = calculateDaysBetweenWithoutWeekends(start, end);
         final Set<LocalDate> holidayForYearRange = getUSFederalHolidayForYearRange(start.getYear(), end.getYear());
-
-        return Sets.difference(weekDaysForYearRange, holidayForYearRange).size();
+        for (LocalDate localDate : holidayForYearRange) {
+            if (localDate.isAfter(start) && localDate.isBefore(end)) {
+                daysBetweenWithoutWeekends--;
+            }
+        }
+        return (int) daysBetweenWithoutWeekends;
     }
 
     /**
@@ -110,37 +113,44 @@ public class MoreDates {
     }
 
     /**
-     * Class representing a range of week days (Monday - Friday) between 2 dates.
+     * Helper method to calculate the number of days between 2 dates. Arbitraged from  http://stackoverflow.com/a/4600534/2918190
+     *
+     * @param start the start date
+     * @param end   the end date
+     *
+     * @return the number of days between start and end excluding weekends
      */
-    private static class WeekDayRange extends ForwardingSet<LocalDate> {
-        private final LocalDate startDate;
-        private final LocalDate endDate;
+    private static long calculateDaysBetweenWithoutWeekends(LocalDate start, LocalDate end) {
 
-        WeekDayRange(LocalDate startDate, LocalDate endDate) {
-            Objects.requireNonNull(startDate, "Start date must not be null!");
-            Objects.requireNonNull(endDate, "End date must not be null");
-            this.startDate = startDate;
-            this.endDate = endDate;
+        Calendar calendar1 = Calendar.getInstance();
+        calendar1.setTime(java.sql.Date.valueOf(start));
+        int weekday1 = calendar1.get(Calendar.DAY_OF_WEEK);
+        calendar1.add(Calendar.DAY_OF_WEEK, -weekday1);
+
+        Calendar calendar2 = Calendar.getInstance();
+        calendar2.setTime(java.sql.Date.valueOf(end));
+        int weekday2 = calendar2.get(Calendar.DAY_OF_WEEK);
+        calendar2.add(Calendar.DAY_OF_WEEK, -weekday2);
+
+        //end Saturday to start Saturday
+        long days = (calendar2.getTimeInMillis() - calendar1.getTimeInMillis()) / (1000 * 60 * 60 * 24);
+        long daysWithoutWeekendDays = days - (days * 2 / 7);
+
+        // Adjust days to add on (w2) and days to subtract (w1) so that Saturday
+        // and Sunday are not included
+        if (weekday1 == Calendar.SUNDAY && weekday2 != Calendar.SATURDAY) {
+            weekday1 = Calendar.MONDAY;
+        } else if (weekday1 == Calendar.SATURDAY && weekday2 != Calendar.SUNDAY) {
+            weekday1 = Calendar.FRIDAY;
         }
 
-        @Override
-        protected Set<LocalDate> delegate() {
-            HashSet<LocalDate> localDates = new HashSet<>();
-            long limit = ChronoUnit.DAYS.between(startDate, endDate) + 1;
-            for (LocalDate d = startDate; ; d = d.plusDays(1)) {
-                if (limit-- == 0)
-                    break;
-                if (notWeekend(d)) {
-                    localDates.add(d);
-                }
-            }
-            return localDates;
+        if (weekday2 == Calendar.SUNDAY) {
+            weekday2 = Calendar.MONDAY;
+        } else if (weekday2 == Calendar.SATURDAY) {
+            weekday2 = Calendar.FRIDAY;
         }
 
-        private boolean notWeekend(LocalDate localDate) {
-            return localDate.getDayOfWeek() != DayOfWeek.SATURDAY && localDate.getDayOfWeek() != DayOfWeek.SUNDAY;
-        }
-
+        return daysWithoutWeekendDays - weekday1 + weekday2;
     }
 
     /**
