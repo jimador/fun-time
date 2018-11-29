@@ -17,11 +17,34 @@ public class MoreDatesTest {
     }
 
     @Test
-    public void totalBuisnessDaysBetween() {
+    public void totalBusinessDaysBetween() {
         LocalDate start = LocalDate.of(2018, 1, 1);
         LocalDate end = LocalDate.of(2018, 12, 31);
 
         Assert.assertThat(MoreDates.totalBusinessDaysBetween(start, end), is(251));
     }
 
+    @Test
+    public void federalWorkDayRangeTest() {
+        LocalDate start = LocalDate.of(2018, 1, 1);
+        LocalDate end = LocalDate.of(2018, 12, 31);
+
+        Assert.assertThat(MoreDates.getFederalWorkDayRangeForYears(start, end).size(), is(251));
+    }
+
+    @Test
+    public void workDayRangeTest() {
+        LocalDate start = LocalDate.of(2018, 1, 1);
+        LocalDate end = LocalDate.of(2018, 12, 31);
+
+        Assert.assertThat(MoreDates.getWeekDayRangeForYears(start, end).size(), is(261));
+    }
+
+    @Test
+    public void dayRangeTest() {
+        LocalDate start = LocalDate.of(2020, 1, 1);
+        LocalDate end = LocalDate.of(2020, 12, 31);
+
+        Assert.assertThat(MoreDates.getDateRangeForYears(start, end).size(), is(366));
+    }
 }

@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -69,7 +70,7 @@ public class MoreDates {
      *
      * @return a {@link Set} of {@link LocalDate}
      */
-    private static Set<LocalDate> getUSFederalHolidayForYearRange(int start, int end) {
+    public static Set<LocalDate> getUSFederalHolidayForYearRange(int start, int end) {
         ImmutableSet.Builder<LocalDate> holidayDates = ImmutableSet.builder();
         for (int i = start; i <= end; i++) {
             holidayDates.addAll(getUSFederalHolidayDatesForYear(i));
@@ -85,7 +86,7 @@ public class MoreDates {
      *
      * @return a {@link Set} of {@link LocalDate}
      */
-    private static Set<LocalDate> getUSFederalHolidayDatesForYear(int year) {
+    public static Set<LocalDate> getUSFederalHolidayDatesForYear(int year) {
         ImmutableSet.Builder<LocalDate> holidayDates = ImmutableSet.builder();
         for (USFederalHoliday day : USFederalHoliday.US_FEDERAL_HOLIDAYS) {
             HolidayKey of = HolidayKey.of(day, year);
@@ -93,6 +94,42 @@ public class MoreDates {
             holidayDates.add(unchecked);
         }
         return holidayDates.build();
+    }
+
+    /**
+     * Get a Collection of all {@link LocalDate} between start and end
+     *
+     * @param startDate the start date
+     * @param endDate   the end date
+     *
+     * @return a Collection of {@link LocalDate}
+     */
+    public static Collection<LocalDate> getDateRangeForYears(LocalDate startDate, LocalDate endDate) {
+        return new DateRange(startDate, endDate);
+    }
+
+    /**
+     * Get a Collection of week days between start and end
+     *
+     * @param startDate the start date
+     * @param endDate   the end date
+     *
+     * @return a Collection of {@link LocalDate}
+     */
+    public static Collection<LocalDate> getWeekDayRangeForYears(LocalDate startDate, LocalDate endDate) {
+        return new WeekDateRange(startDate, endDate);
+    }
+
+    /**
+     * Get a Collection of all {@link LocalDate} between start and end
+     *
+     * @param startDate the start date
+     * @param endDate   the end date
+     *
+     * @return a Collection of {@link LocalDate}
+     */
+    public static Collection<LocalDate> getFederalWorkDayRangeForYears(LocalDate startDate, LocalDate endDate) {
+        return new FederalWorkDayRange(startDate, endDate);
     }
 
     /**
@@ -127,7 +164,7 @@ public class MoreDates {
         final DayOfWeek endW = end.getDayOfWeek();
 
         final long days = ChronoUnit.DAYS.between(start, end);
-        final long daysWithoutWeekends = days - 2 * ((days + startW.getValue())/7);
+        final long daysWithoutWeekends = days - 2 * ((days + startW.getValue()) / 7);
 
         //adjust for starting and ending on a Sunday:
         return daysWithoutWeekends + (startW == DayOfWeek.SUNDAY ? 1 : 0) + (endW == DayOfWeek.SUNDAY ? 1 : 0);

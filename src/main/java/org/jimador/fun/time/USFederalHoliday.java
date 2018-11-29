@@ -9,6 +9,7 @@ import java.time.temporal.TemporalAdjusters;
 /**
  * The list of Federal Observances, as per section 6103(a) of title 5 of the United States Code.
  *
+ * @author James Dunnam
  * @see http://www.law.cornell.edu/uscode/text/5/6103
  */
 public enum USFederalHoliday implements Holiday {
@@ -38,7 +39,7 @@ public enum USFederalHoliday implements Holiday {
     /**
      * Class representing a varying observance of a US federal holiday. e.g. Thanksgiving is celebrated on the fourth Thursday of November.
      *
-     * @implNote A negative {@code ordinal} value represents the last week of the month. e.g. "The last Monday in May"
+     * @implNote An {@code ordinal} value of {@literal -1} represents the last week of the month. e.g. "The last Monday in May"
      */
     private static class VaryingObservance extends BaseHoliday {
 
