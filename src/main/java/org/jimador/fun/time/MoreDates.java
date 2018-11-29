@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -20,7 +21,7 @@ import java.util.Set;
  * @author James Dunnam
  * @implNote US Federal holidays are cached for convenience, as the dates are calculated. The cached dates are expired after 10 minutes or 1000 entries in an LRU fashion.
  */
-public class MoreDates {
+public final class MoreDates {
 
     private static final LoadingCache<HolidayKey, LocalDate> holidayCache = getCache();
 
@@ -105,7 +106,7 @@ public class MoreDates {
      * @return a Collection of {@link LocalDate}
      */
     public static Collection<LocalDate> getDateRangeForYears(LocalDate startDate, LocalDate endDate) {
-        return new DateRange(startDate, endDate);
+        return Collections.unmodifiableCollection(new DateRange(startDate, endDate));
     }
 
     /**
@@ -117,7 +118,7 @@ public class MoreDates {
      * @return a Collection of {@link LocalDate}
      */
     public static Collection<LocalDate> getWeekDayRangeForYears(LocalDate startDate, LocalDate endDate) {
-        return new WeekDateRange(startDate, endDate);
+        return Collections.unmodifiableCollection(new WeekDateRange(startDate, endDate));
     }
 
     /**
@@ -129,7 +130,7 @@ public class MoreDates {
      * @return a Collection of {@link LocalDate}
      */
     public static Collection<LocalDate> getFederalWorkDayRangeForYears(LocalDate startDate, LocalDate endDate) {
-        return new FederalWorkDayRange(startDate, endDate);
+        return Collections.unmodifiableCollection(new FederalWorkDayRange(startDate, endDate));
     }
 
     /**
