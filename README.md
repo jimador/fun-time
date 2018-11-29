@@ -13,6 +13,6 @@
 
 #### TODO:
  * Add more tests
- * Error handling when startDate > endDate
+ * Error handling when startDate > endDate, nulls, etc...
  * add more docs
  * add JMH benchmarks
