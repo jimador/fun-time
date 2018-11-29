@@ -78,6 +78,11 @@ public final class MoreDates {
     public static int totalBusinessDaysBetween(LocalDate start, LocalDate end) {
         Objects.requireNonNull(start, "Start date must not be null");
         Objects.requireNonNull(end, "End date must not be null");
+
+        if (start.equals(end)) {
+            return 0;
+        }
+        
         Preconditions.checkArgument(start.isBefore(end), "Start must be before end");
         long daysBetweenWithoutWeekends = calculateNumberOfDaysBetweenMinusWeekends(start, end);
         final Set<LocalDate> holidayForYearRange = getUSFederalHolidayForYearRange(start.getYear(), end.getYear());
