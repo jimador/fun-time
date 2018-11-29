@@ -121,7 +121,7 @@ public class MoreDates {
      *
      * @return the number of days between start and end excluding weekends
      */
-    private static long https://stackoverflow.com/questions/4600034/calculate-number-of-weekdays-between-two-dates-in-java/44942039#44942039(LocalDate start, LocalDate end) {
+    private static long calculateDaysBetweenWithoutWeekends(LocalDate start, LocalDate end) {
 
         final DayOfWeek startW = start.getDayOfWeek();
         final DayOfWeek endW = end.getDayOfWeek();
