@@ -13,7 +13,7 @@ public class MoreDatesTest {
     public void totalDaysBetween() {
         final LocalDate start = LocalDate.of(2011, 11, 1);
         final LocalDate end = LocalDate.of(2011, 11, 30);
-        Assert.assertThat(MoreDates.totalDaysBetween(start, end), is(30));
+        Assert.assertThat(MoreDates.totalDaysBetween(start, end), is(29));
     }
 
     @Test

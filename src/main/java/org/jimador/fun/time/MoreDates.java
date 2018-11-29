@@ -1,17 +1,21 @@
 package org.jimador.fun.time;
 
+import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.primitives.Ints;
 
 import java.io.Serializable;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
 
@@ -29,15 +33,34 @@ public final class MoreDates {
     }
 
     /**
-     * The total number of days {@link LocalDate} inclusive
+     * The total number of days between 2 {@link LocalDate}, start inclusive, end exclusive.
      *
      * @param start the start date.
      * @param end   the end date.
      *
      * @return the number of days.
+     *
+     * @throws NullPointerException if {@code start} <b>or</b> {@code end} are {@code null}
+     * @implNote max returned from the method is {@link Integer#MAX_VALUE}
      */
     public static int totalDaysBetween(LocalDate start, LocalDate end) {
-        return (int) ChronoUnit.DAYS.between(start, end) + 1;
+        Objects.requireNonNull(start, "Start date must not be null");
+        Objects.requireNonNull(end, "End date must not be null");
+        return Ints.saturatedCast(ChronoUnit.DAYS.between(start, end));
+    }
+
+    /**
+     * The total number of days between 2 {@link Date}
+     *
+     * @param start the start date.
+     * @param end   the end date.
+     *
+     * @return the number of days.
+     *
+     * @implNote self-use: this calls {@link #totalDaysBetween(LocalDate, LocalDate)}
+     */
+    public static int totalDaysBetween(Date start, Date end) {
+        return totalDaysBetween(toLocalDate(start), toLocalDate(end));
     }
 
     /**
@@ -48,11 +71,14 @@ public final class MoreDates {
      *
      * @return the number of days.
      *
+     * @throws NullPointerException     if {@code start} <b>or</b> {@code end} is {@code null}
+     * @throws IllegalArgumentException if {@code start} <b>is after</b> {@code end}
      * @implNote Business days exclude weekends and the observance of US Federal holidays.
      */
     public static int totalBusinessDaysBetween(LocalDate start, LocalDate end) {
         Objects.requireNonNull(start, "Start date must not be null");
         Objects.requireNonNull(end, "End date must not be null");
+        Preconditions.checkArgument(start.isBefore(end), "Start must be before end");
         long daysBetweenWithoutWeekends = calculateNumberOfDaysBetweenMinusWeekends(start, end);
         final Set<LocalDate> holidayForYearRange = getUSFederalHolidayForYearRange(start.getYear(), end.getYear());
         for (LocalDate localDate : holidayForYearRange) {
@@ -61,6 +87,20 @@ public final class MoreDates {
             }
         }
         return (int) daysBetweenWithoutWeekends;
+    }
+
+    /**
+     * The total number of business days between 2 {@link Date}
+     *
+     * @param start the start date
+     * @param end   the end date
+     *
+     * @return the number of days
+     *
+     * @implNote self use: this method calls {@link #totalBusinessDaysBetween(LocalDate, LocalDate)}
+     */
+    public static int totalBusinessDaysBetween(Date start, Date end) {
+        return totalBusinessDaysBetween(toLocalDate(start), toLocalDate(end));
     }
 
     /**
@@ -131,6 +171,42 @@ public final class MoreDates {
      */
     public static Collection<LocalDate> getFederalWorkDayRangeForYears(LocalDate startDate, LocalDate endDate) {
         return Collections.unmodifiableCollection(new FederalWorkDayRange(startDate, endDate));
+    }
+
+    /**
+     * Convert a {@link Date} to a {@link LocalDate} with a specific {@link ZoneId}
+     *
+     * @param date   the date
+     * @param zoneId the zone
+     *
+     * @return a {@link LocalDate}
+     */
+    public static LocalDate toLocalDate(Date date, ZoneId zoneId) {
+        return date.toInstant().atZone(zoneId).toLocalDate();
+    }
+
+    /**
+     * Convert a {@link Date} to a {@link LocalDate}
+     *
+     * @param date the date
+     *
+     * @return a {@link LocalDate}
+     *
+     * @implNote self-use: this calls {@link #toLocalDate(Date, ZoneId)} with {@link ZoneId#systemDefault()}
+     */
+    public static LocalDate toLocalDate(Date date) {
+        return toLocalDate(date, ZoneId.systemDefault());
+    }
+
+    /**
+     * Create a {@link Date} from a {@link LocalDate}
+     *
+     * @param date the date
+     *
+     * @return a {@link LocalDate}
+     */
+    public static Date toDate(LocalDate date) {
+        return java.sql.Date.valueOf(date);
     }
 
     /**
