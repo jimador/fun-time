@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 
 import java.io.Serializable;
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -140,7 +141,7 @@ public class MoreDates {
     private static LoadingCache<HolidayKey, LocalDate> getCache() {
         return CacheBuilder.newBuilder()
                            .maximumSize(1000)
-                           .expireAfterWrite(10, TimeUnit.MINUTES)
+                           .expireAfterWrite(Duration.of(10, ChronoUnit.MINUTES))
                            .build(new CacheLoader<HolidayKey, LocalDate>() {
                                @Override
                                public LocalDate load(HolidayKey key) throws Exception {
