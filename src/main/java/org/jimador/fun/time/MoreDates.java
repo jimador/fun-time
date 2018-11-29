@@ -6,9 +6,9 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 
 import java.io.Serializable;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -113,44 +113,24 @@ public class MoreDates {
     }
 
     /**
-     * Helper method to calculate the number of days between 2 dates. Arbitraged from  http://stackoverflow.com/a/4600534/2918190
+     * Helper method to calculate the number of days between 2 dates. Shamelessly rbitraged from:
+     * {@link https://stackoverflow.com/questions/4600034/calculate-number-of-weekdays-between-two-dates-in-java/44942039#44942039}
      *
      * @param start the start date
      * @param end   the end date
      *
      * @return the number of days between start and end excluding weekends
      */
-    private static long calculateDaysBetweenWithoutWeekends(LocalDate start, LocalDate end) {
+    private static long https://stackoverflow.com/questions/4600034/calculate-number-of-weekdays-between-two-dates-in-java/44942039#44942039(LocalDate start, LocalDate end) {
 
-        Calendar calendar1 = Calendar.getInstance();
-        calendar1.setTime(java.sql.Date.valueOf(start));
-        int weekday1 = calendar1.get(Calendar.DAY_OF_WEEK);
-        calendar1.add(Calendar.DAY_OF_WEEK, -weekday1);
+        final DayOfWeek startW = start.getDayOfWeek();
+        final DayOfWeek endW = end.getDayOfWeek();
 
-        Calendar calendar2 = Calendar.getInstance();
-        calendar2.setTime(java.sql.Date.valueOf(end));
-        int weekday2 = calendar2.get(Calendar.DAY_OF_WEEK);
-        calendar2.add(Calendar.DAY_OF_WEEK, -weekday2);
+        final long days = ChronoUnit.DAYS.between(start, end);
+        final long daysWithoutWeekends = days - 2 * ((days + startW.getValue())/7);
 
-        //end Saturday to start Saturday
-        long days = (calendar2.getTimeInMillis() - calendar1.getTimeInMillis()) / (1000 * 60 * 60 * 24);
-        long daysWithoutWeekendDays = days - (days * 2 / 7);
-
-        // Adjust days to add on (w2) and days to subtract (w1) so that Saturday
-        // and Sunday are not included
-        if (weekday1 == Calendar.SUNDAY && weekday2 != Calendar.SATURDAY) {
-            weekday1 = Calendar.MONDAY;
-        } else if (weekday1 == Calendar.SATURDAY && weekday2 != Calendar.SUNDAY) {
-            weekday1 = Calendar.FRIDAY;
-        }
-
-        if (weekday2 == Calendar.SUNDAY) {
-            weekday2 = Calendar.MONDAY;
-        } else if (weekday2 == Calendar.SATURDAY) {
-            weekday2 = Calendar.FRIDAY;
-        }
-
-        return daysWithoutWeekendDays - weekday1 + weekday2;
+        //adjust for starting and ending on a Sunday:
+        return daysWithoutWeekends + (startW == DayOfWeek.SUNDAY ? 1 : 0) + (endW == DayOfWeek.SUNDAY ? 1 : 0);
     }
 
     /**
