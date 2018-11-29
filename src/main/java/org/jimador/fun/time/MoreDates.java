@@ -51,7 +51,7 @@ public class MoreDates {
     public static int totalBusinessDaysBetween(LocalDate start, LocalDate end) {
         Objects.requireNonNull(start, "Start date must not be null");
         Objects.requireNonNull(end, "End date must not be null");
-        long daysBetweenWithoutWeekends = calculateDaysBetweenWithoutWeekends(start, end);
+        long daysBetweenWithoutWeekends = calculateNumberOfDaysBetweenMinusWeekends(start, end);
         final Set<LocalDate> holidayForYearRange = getUSFederalHolidayForYearRange(start.getYear(), end.getYear());
         for (LocalDate localDate : holidayForYearRange) {
             if (localDate.isAfter(start) && localDate.isBefore(end)) {
@@ -113,7 +113,7 @@ public class MoreDates {
     }
 
     /**
-     * Helper method to calculate the number of days between 2 dates. Shamelessly rbitraged from:
+     * Helper method to calculate the number of days between 2 dates. Shamelessly arbitraged from:
      * {@link https://stackoverflow.com/questions/4600034/calculate-number-of-weekdays-between-two-dates-in-java/44942039#44942039}
      *
      * @param start the start date
@@ -121,7 +121,7 @@ public class MoreDates {
      *
      * @return the number of days between start and end excluding weekends
      */
-    private static long calculateDaysBetweenWithoutWeekends(LocalDate start, LocalDate end) {
+    private static long calculateNumberOfDaysBetweenMinusWeekends(LocalDate start, LocalDate end) {
 
         final DayOfWeek startW = start.getDayOfWeek();
         final DayOfWeek endW = end.getDayOfWeek();
