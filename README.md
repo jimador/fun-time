@@ -16,3 +16,4 @@
  * Error handling when startDate > endDate, nulls, etc...
  * add more docs
  * add JMH benchmarks
+ * Why stop with US Federal Holidays when there are so many others! Add support for US State and Local too!
