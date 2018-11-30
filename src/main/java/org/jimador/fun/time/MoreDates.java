@@ -82,7 +82,7 @@ public final class MoreDates {
         if (start.equals(end)) {
             return 0;
         }
-        
+
         Preconditions.checkArgument(start.isBefore(end), "Start must be before end");
         long daysBetweenWithoutWeekends = calculateNumberOfDaysBetweenMinusWeekends(start, end);
         final Set<LocalDate> holidayForYearRange = getUSFederalHolidayForYearRange(start.getYear(), end.getYear());
